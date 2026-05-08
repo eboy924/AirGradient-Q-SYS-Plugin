@@ -36,24 +36,10 @@ function GetProperties()
   return props
 end
 
--- Optional function to define pins on the plugin that are not connected to a Control
-function GetPins(props)
-  local pins = {}
-  --[[ #include "pins.lua" ]]
-  return pins
-end
-
 -- Optional function to update available properties when properties are altered by the user
 function RectifyProperties(props)
   --[[ #include "rectify_properties.lua" ]]
   return props
-end
-
--- Optional function to define components used within the plugin
-function GetComponents(props)
-  local components = {}
-  --[[ #include "components.lua" ]]
-  return components
 end
 
 -- Defines the Controls used within the plugin

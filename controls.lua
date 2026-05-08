@@ -111,3 +111,9 @@ table.insert(ctrls, {
   Min = 0,
   Max = 500
 })
+table.insert(ctrls,{
+  Name = "LedMode",
+  ControlType = "Text",
+  UserPin = true,
+  PinStyle = "Both"
+})

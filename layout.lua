@@ -10,7 +10,7 @@ ControlSize = {150,StandardHeight}
 
 layout["Status"] = {
   PrettyName = "Status",
-  Type = "Text",
+  Style = "Text",
   Position = {x,y},
   Size = {LabelSize[1] + ControlSize[1],StandardHeight}
 }
@@ -24,7 +24,7 @@ table.insert(graphics, {
 })
 layout["IPAddress"] = {
   PrettyName = "Connection Address",
-  Type = "Text",
+  Style = "Text",
   Position = {x + LabelSize[1], y},
   Size = ControlSize
 }
@@ -58,7 +58,7 @@ for _, info in ipairs(UnitInfo) do
   })
   layout[info.controlName] = {
     PrettyName = "Unit Info~" .. info.label,
-    Type = "Text",
+    Style = "Text",
     Position = {x + LabelSize[1], y},
     Size = ControlSize,
   }
@@ -74,6 +74,11 @@ ConfigKnobs = {
     label = "Display Brightness",
     controlName = "DisplayBrightness"
 
+  },
+  {
+    label = "LED Mode",
+    controlName = "LedMode",
+    layoutType = "ComboBox"
   }
 }
 
@@ -87,7 +92,7 @@ for _, info in ipairs(ConfigKnobs) do
   })
   layout[info.controlName] = {
     PrettyName = "Config~" .. info.label,
-    Type = "Text",
+    Style = info.layoutType and info.layoutType or "Text",
     Position = {x + LabelSize[1], y},
     Size = ControlSize,
   }
@@ -130,7 +135,7 @@ for _, info in ipairs(MeasurementInfo) do
   })
   layout[info.controlName] = {
     PrettyName = "Measurements~" .. info.label,
-    Type = "Text",
+    Style = "Text",
     Position = {x + LabelSize[1], y},
     Size = ControlSize,
     IsReadOnly = true

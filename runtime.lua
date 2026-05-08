@@ -9,6 +9,18 @@ PollTimer = Timer.New()
 
 tempUnit = "c"
 
+LedModes = {
+  co2 = "CO2",
+  pm = "PM2.5",
+  off = "Off"
+}
+-- build reverse lookup for LedModes
+for mode, label in pairs(LedModes) do
+  LedModes[label] = mode
+end
+
+Controls.LedMode.Choices = {"CO2","PM2.5","Off"}
+
 function Poll()
   GetConfig()
   Timer.CallAfter(
@@ -114,28 +126,38 @@ function ParseCurrent(data)
   if data.pm02Compensated then
     Controls.PM2_5.Value = tonumber(data.pm02Compensated)
   end
+  if data.ledMode then
+    Controls.LedMode.String = LedModes[data.ledMode] or data.ledMode
+  end
 end
 
-LedBrightnessDebounce = Timer.New()
-LedBrightnessDebounce.EventHandler = function()
-  LedBrightnessDebounce:Stop()
+function SendConfigChange(config)
   HttpClient.Put(
     {
       Url = "http://" .. Controls.IPAddress.String .. "/config",
       Headers = {["Content-Type"] = "application/json"},
       Timeout = 5,
-      Data = rapidjson.encode({ledBarBrightness = math.floor(Controls.LedBrightness.Value)}),
+      Data = rapidjson.encode(config),
       EventHandler = function(table, code, data, error, headers)
         if code == 200 then
           Controls.Status.Value = 0
+          print("Config updated successfully")
+          print("Config sent: " .. rapidjson.encode(config))
         else
-          print("Failed to update LedBrightness: " .. tostring(code))
+          print("Failed to update config: " .. tostring(code))
+          print("Config attempted: " .. rapidjson.encode(config))
           Controls.Status.Value = 4
         end
         data = nil
       end
     }
   )
+end
+
+LedBrightnessDebounce = Timer.New()
+LedBrightnessDebounce.EventHandler = function()
+  LedBrightnessDebounce:Stop()
+  SendConfigChange({ledBarBrightness = math.floor(Controls.LedBrightness.Value)})
 end
 function Controls.LedBrightness.EventHandler()
   LedBrightnessDebounce:Stop()
@@ -145,27 +167,15 @@ end
 DisplayBrightnessDebounce = Timer.New()
 DisplayBrightnessDebounce.EventHandler = function()
   DisplayBrightnessDebounce:Stop()
-  HttpClient.Put(
-    {
-      Url = "http://" .. Controls.IPAddress.String .. "/config",
-      Headers = {["Content-Type"] = "application/json"},
-      Timeout = 5,
-      Data = rapidjson.encode({displayBrightness = math.floor(Controls.DisplayBrightness.Value)}),
-      EventHandler = function(table, code, data, error, headers)
-        if code == 200 then
-          Controls.Status.Value = 0
-        else
-          print("Failed to update DisplayBrightness: " .. tostring(code))
-          Controls.Status.Value = 4
-        end
-        data = nil
-      end
-    }
-  )
+  SendConfigChange({displayBrightness = math.floor(Controls.DisplayBrightness.Value)})
 end
 function Controls.DisplayBrightness.EventHandler()
   DisplayBrightnessDebounce:Stop()
   DisplayBrightnessDebounce:Start(DebounceTime)
+end
+
+Controls.LedMode.EventHandler = function()
+  SendConfigChange({ledMode = LedModes[Controls.LedMode.String] or Controls.LedMode.String})
 end
 
 function Init()
